@@ -19,7 +19,27 @@ namespace SSA {
                 new Limitation("increased burnout", new [] { ShipSystemType.reactor }, 0.1)
             });
 
+            Console.WriteLine("Available advantages:");
+            foreach (var advantage in factory.advantages) {
+                Console.WriteLine("  " + advantage.name);
+            }
+            Console.WriteLine("Available limitations:");
+            foreach (var limitation in factory.limitations) {
+                Console.WriteLine("  " + limitation.name);
+            }
+            Console.WriteLine();
+
             var reactor = factory.CreateSystem(ShipSystemType.reactor, 50);
+            Console.WriteLine("Created sytem of type: " + reactor.type);
+            Console.WriteLine("  Cost: " + reactor.realCost);
+            Console.WriteLine("  Advantages:");
+            foreach (var adv in reactor.advantages)
+                Console.WriteLine("    " + adv.name);
+            Console.WriteLine("  Limitations:");
+            foreach (var lim in reactor.limitations)
+                Console.WriteLine("    " + lim.name);
+
+            Console.ReadLine();
         }
     }
 
@@ -28,7 +48,7 @@ namespace SSA {
             get { return ShipSystemType.reactor; }
         }
 
-        public Reactor(double realCost, List<Advantage> advantages, List<Limitation> limitations) : base(realCost, advantages, limitations) {}
+        public Reactor(double realCost, List<Advantage> advantages, List<Limitation> limitations) : base(realCost, advantages, limitations) { }
     }
 
     class ShipSystemFactory {
@@ -57,6 +77,11 @@ namespace SSA {
         public ShipSystem CreateSystem(ShipSystemType type, int baseCost) {
             int numberOfAdvantages = _r.Next(0, 3); // 0-2 advantages
             int numberOfLimitations = _r.Next(0, 3); // 0-2 limitations
+
+            Console.WriteLine("Creating system of type: " + type);
+            Console.WriteLine("  Adv count: " + numberOfAdvantages);
+            Console.WriteLine("  Lim count: " + numberOfLimitations);
+
             var advs = new List<Advantage>();
             var lims = new List<Limitation>();
 
@@ -75,7 +100,7 @@ namespace SSA {
                 .ToArray();
             for (int i = 0; i < numberOfLimitations; i++) {
                 int index = _r.Next(limsOfType.Length);
-                lims.Add(limsOfType[index]);                
+                lims.Add(limsOfType[index]);
             }
 
             var realCost = activeCost / (1 + lims.Sum(l => l.pointsModifier));

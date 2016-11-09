@@ -44,10 +44,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Advantage.cs" />
-    <Compile Include="Disadvantage.cs" />
+    <Compile Include="Limitation.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Ship.cs" />
     <Compile Include="ShipSystem.cs" />
     <Compile Include="ShipSystemAttribute.cs" />
     <Compile Include="ShipSystemType.cs" />
