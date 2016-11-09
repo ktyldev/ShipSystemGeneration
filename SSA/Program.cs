@@ -7,15 +7,17 @@ using System.Threading.Tasks;
 namespace SSA {
     class Program {
         static void Main(string[] args) {
+            var allTypes = (ShipSystemType[])Enum.GetValues(typeof(ShipSystemType));
+
             var factory = new ShipSystemFactory();
             factory.advantages.AddRange(new[] {
                 new Advantage("fast shift", new[] { ShipSystemType.reactor }, 0.1),
-                new Advantage("reduced mass", new [] { ShipSystemType.armour, ShipSystemType.cloak, ShipSystemType.reactor }, 0.15),
+                new Advantage("reduced mass", allTypes, 0.15),
                 new Advantage("decreased burnout", new [] { ShipSystemType.reactor }, 0.1)
             });
             factory.limitations.AddRange(new[] {
                 new Limitation("slow shift", new [] { ShipSystemType.reactor }, 0.1),
-                new Limitation("extra mass", new [] { ShipSystemType.armour, ShipSystemType.cloak, ShipSystemType.reactor }, 0.15),
+                new Limitation("extra mass", allTypes, 0.15),
                 new Limitation("increased burnout", new [] { ShipSystemType.reactor }, 0.1)
             });
 
@@ -30,25 +32,22 @@ namespace SSA {
             Console.WriteLine();
 
             var reactor = factory.CreateSystem(ShipSystemType.reactor, 50);
-            Console.WriteLine("Created sytem of type: " + reactor.type);
-            Console.WriteLine("  Cost: " + reactor.realCost);
-            Console.WriteLine("  Advantages:");
-            foreach (var adv in reactor.advantages)
-                Console.WriteLine("    " + adv.name);
-            Console.WriteLine("  Limitations:");
-            foreach (var lim in reactor.limitations)
-                Console.WriteLine("    " + lim.name);
-
+            var sensor = factory.CreateSystem(ShipSystemType.sensor, 25);
+            LogSystemDetails(reactor);
+            LogSystemDetails(sensor);
             Console.ReadLine();
         }
-    }
 
-    class Reactor : ShipSystem {
-        public override ShipSystemType type {
-            get { return ShipSystemType.reactor; }
+        static void LogSystemDetails(ShipSystem system) {
+            Console.WriteLine("Created system of type: " + system.type);
+            Console.WriteLine("  Cost: " + system.realCost);
+            Console.WriteLine("  Advantages:");
+            foreach (var adv in system.advantages)
+                Console.WriteLine("    " + adv.name);
+            Console.WriteLine("  Limitations:");
+            foreach (var lim in system.limitations)
+                Console.WriteLine("    " + lim.name);
         }
-
-        public Reactor(double realCost, List<Advantage> advantages, List<Limitation> limitations) : base(realCost, advantages, limitations) { }
     }
 
     class ShipSystemFactory {
@@ -62,6 +61,7 @@ namespace SSA {
                 case ShipSystemType.reactor:
                     return new Reactor(realCost, advantages, limitations);
                 case ShipSystemType.sensor:
+                    return new Sensor(realCost, advantages, limitations);
                 case ShipSystemType.hold:
                 case ShipSystemType.cloak:
                 case ShipSystemType.quarters:
@@ -81,6 +81,7 @@ namespace SSA {
             Console.WriteLine("Creating system of type: " + type);
             Console.WriteLine("  Adv count: " + numberOfAdvantages);
             Console.WriteLine("  Lim count: " + numberOfLimitations);
+            Console.WriteLine();
 
             var advs = new List<Advantage>();
             var lims = new List<Limitation>();

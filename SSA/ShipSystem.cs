@@ -28,4 +28,20 @@ namespace SSA {
             limitations.Add(limitation);
         }
     }
+
+    public class Reactor : ShipSystem {
+        public override ShipSystemType type {
+            get { return ShipSystemType.reactor; }
+        }
+
+        public Reactor(double realCost, List<Advantage> advantages, List<Limitation> limitations) : base(realCost, advantages, limitations) { }
+    }
+
+    public class Sensor : ShipSystem {
+        public override ShipSystemType type {
+            get { return ShipSystemType.sensor; }
+        }
+
+        public Sensor(double realCost, List<Advantage> advantages, List<Limitation> limitations) : base(realCost, advantages, limitations) { }
+    }
 }
