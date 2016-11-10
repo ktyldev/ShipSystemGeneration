@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace SSA {
     public class Advantage : ShipSystemAttribute {
+        public Advantage(string name, ShipSystemType[] systemTypes, double value, Tag tag) : base(name, systemTypes, value, tag) { }
         public Advantage(string name, ShipSystemType[] systemTypes, double value) : base(name, systemTypes, value) { }
     }
 }

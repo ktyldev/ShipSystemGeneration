@@ -11,14 +11,17 @@ namespace SSA {
 
             var factory = new ShipSystemFactory();
             factory.advantages.AddRange(new[] {
-                new Advantage("fast shift", new[] { ShipSystemType.reactor }, 0.1),
-                new Advantage("reduced mass", allTypes, 0.15),
-                new Advantage("decreased burnout", new [] { ShipSystemType.reactor }, 0.1)
+                new Advantage("fast shift", new[] { ShipSystemType.reactor }, 0.1, ShipSystemAttribute.Tag.shift),
+                new Advantage("reduced mass", allTypes, 0.15, ShipSystemAttribute.Tag.mass),
+                new Advantage("decreased burnout", new [] { ShipSystemType.reactor }, 0.1, ShipSystemAttribute.Tag.burnout),
+                new Advantage("test advantage 1", allTypes, 0.1),
+                new Advantage("test advantage 2", allTypes, 0.1),
+                new Advantage("test advantage 3", allTypes, 0.1)
             });
             factory.limitations.AddRange(new[] {
-                new Limitation("slow shift", new [] { ShipSystemType.reactor }, 0.1),
-                new Limitation("extra mass", allTypes, 0.15),
-                new Limitation("increased burnout", new [] { ShipSystemType.reactor }, 0.1)
+                new Limitation("slow shift", new [] { ShipSystemType.reactor }, 0.1, ShipSystemAttribute.Tag.shift),
+                new Limitation("extra mass", allTypes, 0.15, ShipSystemAttribute.Tag.mass),
+                new Limitation("increased burnout", new [] { ShipSystemType.reactor }, 0.1, ShipSystemAttribute.Tag.burnout)
             });
 
             Console.WriteLine("Available advantages:");
@@ -52,12 +55,17 @@ namespace SSA {
 
     class ShipSystemFactory {
         Dictionary<ShipSystemType, Func<double, List<Advantage>, List<Limitation>, ShipSystem>> _ctors;
-        Random _r = new Random();
+        Random _random = new Random();
 
-        public List<Advantage> advantages = new List<Advantage>();
-        public List<Limitation> limitations = new List<Limitation>();
+        // To be set in inspector
+        public List<Advantage> advantages;
+        public List<Limitation> limitations;
 
         public ShipSystemFactory() {
+            advantages = new List<Advantage>();
+            limitations = new List<Limitation>();
+            _ctors = new Dictionary<ShipSystemType, Func<double, List<Advantage>, List<Limitation>, ShipSystem>>();
+
             _ctors.Add(ShipSystemType.reactor, (c, a, l) => new Reactor(c, a, l));
             _ctors.Add(ShipSystemType.sensor, (c, a, l) => new Sensor(c, a, l));
             _ctors.Add(ShipSystemType.hold, (c, a, l) => new Hold(c, a, l));
@@ -70,38 +78,71 @@ namespace SSA {
         }
 
         public ShipSystem CreateSystem(ShipSystemType type, int baseCost) {
-            int numberOfAdvantages = _r.Next(0, 3); // 0-2 advantages
-            int numberOfLimitations = _r.Next(0, 3); // 0-2 limitations
+            int numberOfAdvantages = _random.Next(0, 3); // 0-2 advantages
+            int numberOfLimitations = _random.Next(0, 3); // 0-2 limitations
 
-            Console.WriteLine("Creating system of type: " + type);
-            Console.WriteLine("  Adv count: " + numberOfAdvantages);
-            Console.WriteLine("  Lim count: " + numberOfLimitations);
-            Console.WriteLine();
+            var advs = GetDistinctAttributes(advantages, type, numberOfAdvantages);
 
-            var advs = new List<Advantage>();
-            var lims = new List<Limitation>();
+            var availableTags = ((ShipSystemAttribute.Tag[])Enum.GetValues(typeof(ShipSystemAttribute.Tag))).ToList();
+            foreach (var advantage in advs) {
+                if (advantage.tag == ShipSystemAttribute.Tag.none) 
+                    continue;
 
-            var advsOfType = advantages
+                if (availableTags.Contains(advantage.tag)) {
+                    availableTags.Remove(advantage.tag);
+                }
+            }
+
+            var availableLimitations = limitations
+                .Where(l => availableTags.Contains(l.tag))
+                .ToList();
+
+            var lims = GetDistinctAttributes(availableLimitations, type, numberOfLimitations);
+            
+            return CreateSystem(type, baseCost, advs, lims);
+        }
+
+        private ShipSystem CreateSystem(ShipSystemType type, int baseCost, List<Advantage> advantages, List<Limitation> limitations) {
+            advantages
+                .Select(a => (ShipSystemAttribute)a)
+                .Concat(limitations
+                .Select(l => (ShipSystemAttribute)l))
+                .ToList().ForEach(ssa => {
+                    if (!ssa.systemTypes.Contains(type))
+                        throw new ArgumentException(ssa.name + " is not compatible with system type: " + type);
+                });
+
+            var activeCost = baseCost * (1 + advantages.Sum(a => a.pointsModifier));
+            var realCost = activeCost / (1 + limitations.Sum(l => l.pointsModifier));
+
+            return _ctors[type](realCost, advantages, limitations);
+        }
+
+        private List<T> GetDistinctAttributes<T>(List<T> attributes, ShipSystemType type, int count) where T : ShipSystemAttribute {
+            var attributeArray = attributes
                 .Where(a => a.systemTypes.Contains(type))
                 .ToArray();
-            for (int i = 0; i < numberOfAdvantages; i++) {
-                int index = _r.Next(advsOfType.Length);
-                advs.Add(advsOfType[index]);
+
+            if (count > attributeArray.Length)
+                throw new Exception(count + " less than number of possible choices");
+
+            Shuffle(attributeArray);
+
+            var results = new List<T>();
+            for (int i = 0; i < count; i++) {
+                results.Add(attributeArray[i]);
             }
+            return results;
+        }
 
-            var activeCost = baseCost * (1 + advs.Sum(a => a.pointsModifier));
-
-            var limsOfType = limitations
-                .Where(l => l.systemTypes.Contains(type))
-                .ToArray();
-            for (int i = 0; i < numberOfLimitations; i++) {
-                int index = _r.Next(limsOfType.Length);
-                lims.Add(limsOfType[index]);
+        private void Shuffle<T>(T[] array) {
+            int n = array.Length;
+            for (int i = 0; i < n; i++) {
+                int r = i + (int)(_random.NextDouble() * (n - i));
+                T t = array[r];
+                array[r] = array[i];
+                array[i] = t;
             }
-
-            var realCost = activeCost / (1 + lims.Sum(l => l.pointsModifier));
-
-            return _ctors[type](realCost, advs, lims); ;
         }
     }
 }
