@@ -63,12 +63,19 @@ namespace SSA {
                 case ShipSystemType.sensor:
                     return new Sensor(realCost, advantages, limitations);
                 case ShipSystemType.hold:
+                    return new Hold(realCost, advantages, limitations);
                 case ShipSystemType.cloak:
+                    return new Cloak(realCost, advantages, limitations);
                 case ShipSystemType.quarters:
+                    return new Quarters(realCost, advantages, limitations);
                 case ShipSystemType.thruster:
+                    return new Thruster(realCost, advantages, limitations);
                 case ShipSystemType.shield:
+                    return new Shield(realCost, advantages, limitations);
                 case ShipSystemType.armour:
+                    return new Armour(realCost, advantages, limitations);
                 case ShipSystemType.weapon:
+                    return new Weapon(realCost, advantages, limitations);
                 default:
                     throw new NotImplementedException();
             }
