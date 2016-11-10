@@ -51,34 +51,22 @@ namespace SSA {
     }
 
     class ShipSystemFactory {
+        Dictionary<ShipSystemType, Func<double, List<Advantage>, List<Limitation>, ShipSystem>> _ctors;
         Random _r = new Random();
 
         public List<Advantage> advantages = new List<Advantage>();
         public List<Limitation> limitations = new List<Limitation>();
 
-        private ShipSystem CreateSystem(ShipSystemType type, double realCost, List<Advantage> advantages, List<Limitation> limitations) {
-            switch (type) {
-                case ShipSystemType.reactor:
-                    return new Reactor(realCost, advantages, limitations);
-                case ShipSystemType.sensor:
-                    return new Sensor(realCost, advantages, limitations);
-                case ShipSystemType.hold:
-                    return new Hold(realCost, advantages, limitations);
-                case ShipSystemType.cloak:
-                    return new Cloak(realCost, advantages, limitations);
-                case ShipSystemType.quarters:
-                    return new Quarters(realCost, advantages, limitations);
-                case ShipSystemType.thruster:
-                    return new Thruster(realCost, advantages, limitations);
-                case ShipSystemType.shield:
-                    return new Shield(realCost, advantages, limitations);
-                case ShipSystemType.armour:
-                    return new Armour(realCost, advantages, limitations);
-                case ShipSystemType.weapon:
-                    return new Weapon(realCost, advantages, limitations);
-                default:
-                    throw new NotImplementedException();
-            }
+        public ShipSystemFactory() {
+            _ctors.Add(ShipSystemType.reactor, (c, a, l) => new Reactor(c, a, l));
+            _ctors.Add(ShipSystemType.sensor, (c, a, l) => new Sensor(c, a, l));
+            _ctors.Add(ShipSystemType.hold, (c, a, l) => new Hold(c, a, l));
+            _ctors.Add(ShipSystemType.cloak, (c, a, l) => new Cloak(c, a, l));
+            _ctors.Add(ShipSystemType.quarters, (c, a, l) => new Quarters(c, a, l));
+            _ctors.Add(ShipSystemType.thruster, (c, a, l) => new Thruster(c, a, l));
+            _ctors.Add(ShipSystemType.shield, (c, a, l) => new Shield(c, a, l));
+            _ctors.Add(ShipSystemType.armour, (c, a, l) => new Armour(c, a, l));
+            _ctors.Add(ShipSystemType.weapon, (c, a, l) => new Weapon(c, a, l));
         }
 
         public ShipSystem CreateSystem(ShipSystemType type, int baseCost) {
@@ -113,7 +101,7 @@ namespace SSA {
 
             var realCost = activeCost / (1 + lims.Sum(l => l.pointsModifier));
 
-            return CreateSystem(type, realCost, advs, lims);
+            return _ctors[type](realCost, advs, lims); ;
         }
     }
 }
