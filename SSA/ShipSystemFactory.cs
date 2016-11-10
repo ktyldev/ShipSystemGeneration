@@ -29,10 +29,7 @@ namespace SSA {
             _ctors.Add(ShipSystemType.weapon, (c, a, l) => new Weapon(c, a, l));
         }
 
-        public ShipSystem CreateSystem(ShipSystemType type, int baseCost) {
-            int numberOfAdvantages = _random.Next(0, 3); // 0-2 advantages
-            int numberOfLimitations = _random.Next(0, 3); // 0-2 limitations
-
+        public ShipSystem CreateSystem(ShipSystemType type, int baseCost, int numberOfAdvantages, int numberOfLimitations) {
             var advs = GetDistinctAttributes(advantages, type, numberOfAdvantages);
 
             var availableTags = ((ShipSystemAttribute.Tag[])Enum.GetValues(typeof(ShipSystemAttribute.Tag))).ToList();

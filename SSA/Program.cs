@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 
 namespace SSA {
     class Program {
+        static Random _random = new Random();
+
         static void Main(string[] args) {
             var allTypes = (ShipSystemType[])Enum.GetValues(typeof(ShipSystemType));
 
@@ -21,7 +23,10 @@ namespace SSA {
             factory.limitations.AddRange(new[] {
                 new Limitation("slow shift", new [] { ShipSystemType.reactor }, 0.1, ShipSystemAttribute.Tag.shift),
                 new Limitation("extra mass", allTypes, 0.15, ShipSystemAttribute.Tag.mass),
-                new Limitation("increased burnout", new [] { ShipSystemType.reactor }, 0.1, ShipSystemAttribute.Tag.burnout)
+                new Limitation("increased burnout", new [] { ShipSystemType.reactor }, 0.1, ShipSystemAttribute.Tag.burnout),
+                new Limitation("test limitation 1", allTypes, 0.1),
+                new Limitation("test limitation 2", allTypes, 0.1),
+                new Limitation("test limitation 3", allTypes, 0.1)
             });
 
             Console.WriteLine("Available advantages:");
@@ -34,8 +39,10 @@ namespace SSA {
             }
             Console.WriteLine();
 
-            var reactor = factory.CreateSystem(ShipSystemType.reactor, 50);
-            var sensor = factory.CreateSystem(ShipSystemType.sensor, 25);
+            Func<ShipSystemType, int, ShipSystem> makeWithRandomAttributes = (st, bc) => factory.CreateSystem(st, bc, _random.Next(1, 3), _random.Next(1, 3));
+
+            var reactor = makeWithRandomAttributes(ShipSystemType.reactor, 50);
+            var sensor = makeWithRandomAttributes(ShipSystemType.sensor, 25);
             LogSystemDetails(reactor);
             LogSystemDetails(sensor);
             Console.ReadLine();
